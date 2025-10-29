@@ -1,69 +1,42 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.options import Options
-
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from webdriver_manager.firefox import GeckoDriverManager
 from app.application import Application
 
-#def browser_init(context):
 def browser_init(context, scenario_name):
-
-
-
-    ### SAFARI ###
-    # context.driver = webdriver.Firefox()
-    # context.driver = webdriver.Safari()
-
-    ### HEADLESS MODE ####
+    ### Chrome
     # options = webdriver.ChromeOptions()
-    # options.add_argument('headless')
+    # options.add_argument("--headless=new")
+    # options.add_argument("--window-size=1920,1080")
+    # options.add_argument("--no-sandbox")
+    # options.add_argument("--disable-gpu")
+    # options.add_argument("--disable-dev-shm-usage")
+    #
     # context.driver = webdriver.Chrome(
+    #     service=ChromeService(ChromeDriverManager().install()),
     #     options=options
     # )
 
-    ### BROWSERSTACK ###
-    #Register for BrowserStack, then grab it from https://www.browserstack.com/accounts/settings
-    # bs_user = 'mahdiehkalantarn_WALVYc'
-    # bs_key = '7wYroeEX6z3sJg1rE9j8'
-    # url = f'http://{bs_user}:{bs_key}@hub-cloud.browserstack.com/wd/hub'
-    #
-    # options = Options()
-    # bstack_options = {
-    #     "os" : "OS X",
-    #     "osVersion" : "Tahoe",
-    #     "browserVersion" : "26.0",
-    #     'browserName': 'Safari',
-    #     'sessionName': scenario_name,
-    # }
-    # options.set_capability('bstack:options', bstack_options)
-    # context.driver = webdriver.Remote(command_executor=url, options=options)
+    ### Firefox ###
+    options = FirefoxOptions()
+    # options.add_argument("--headless")
+    options.add_argument("--width=1920")
+    options.add_argument("--height=1080")
 
-    """
-    :param context: Behave context
-    """
-    driver_path = ChromeDriverManager().install()
-    service = Service(driver_path)
-    context.driver = webdriver.Chrome(service=service)
+    context.driver = webdriver.Firefox(
+        service=FirefoxService(GeckoDriverManager().install()),
+        options=options
+    )
 
-    context.driver.maximize_window()
-    context.driver.implicitly_wait(4)
+
     context.app = Application(context.driver)
 
-
 def before_scenario(context, scenario):
-    print('\nStarted scenario: ', scenario.name)
-   # browser_init(context)
     browser_init(context, scenario.name)
 
-
-def before_step(context, step):
-    print('\nStarted step: ', step)
-
-
-def after_step(context, step):
-    if step.status == 'failed':
-        print('\nStep failed: ', step)
-
-
-def after_scenario(context, feature):
-    context.driver.quit()
+def after_scenario(context, scenario):
+    if hasattr(context, "driver"):
+        context.driver.quit()
