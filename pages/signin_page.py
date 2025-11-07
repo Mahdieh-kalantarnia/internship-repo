@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
-
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from pages.base_page import Page
 
 
@@ -19,9 +20,12 @@ class SignIn(Page):
 
 
     def continue_btn(self):
-        self.driver.find_element(*self.CONTINUE).click()
+        element = WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable(self.CONTINUE)
+        )
 
 
+        self.driver.execute_script("arguments[0].click();", element)
 
 
 
